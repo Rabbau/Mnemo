@@ -1,0 +1,27 @@
+{
+  "templates_folder": "/template",
+  "trigger_on_file_creation": true,
+  "enable_folder_templates": true,
+  "folder_templates": [
+    {
+      "folder": "000 Inbox",
+      "template": "template/Inbox Template.md"
+    },
+    {
+      "folder": "200 Tech",
+      "template": "template/Technology Template.md"
+    },
+    {
+      "folder": "300 Concepts",
+      "template": "template/Concept Template.md"
+    },
+    {
+      "folder": "400 Problems",
+      "template": "template/Problem Template.md"
+    },
+    {
+      "folder": "800 Daily",
+      "template": "template/Daily Note Template.md"
+    }
+  ]
+}

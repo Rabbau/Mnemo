@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mnemo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2 27 9v14l-11 7-11-7V9z' fill='%238b6cf6'/></svg>">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/vendor/chart.umd.min.js"></script>
+  <script src="/static/vendor/force-graph.min.js"></script>
+  <script src="/static/vendor/marked.min.js"></script>
+  <script src="/static/vendor/purify.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2 27 9v14l-11 7-11-7V9z" fill="var(--accent)"/><path d="M16 2v28M5 9l22 14M27 9 5 23" stroke="var(--bg)" stroke-width="1.2" opacity=".5"/></svg>
+      <span>Mnemo</span>
+    </div>
+    <button class="find-btn" id="btn-open-palette" title="Найти заметку или спросить ИИ">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <span>Найти / спросить</span><kbd>Ctrl K</kbd>
+    </button>
+    <nav>
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Обзор</button>
+      <button class="nav-item" data-view="graph">
+        <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8.2 7 15.6 7.6M7 8.3l2.3 7.3M16.5 10 11.7 16"/></svg>Граф</button>
+      <button class="nav-item" data-view="notes">
+        <svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>Заметки</button>
+      <button class="nav-item" data-view="chat">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Чат</button>
+      <button class="nav-item" data-view="tools">
+        <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3zM18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/></svg>ИИ-агент</button>
+      <button class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Настройки</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="vault-label"><span class="muted small">Хранилище</span><div id="vault-name">не выбрано</div></div>
+      <div class="status" title="Модель для чата"><span id="llm-dot" class="dot"></span><span id="llm-label">Чат…</span></div>
+      <div class="status" title="Статус Ollama (поиск)"><span id="ollama-dot" class="dot"></span><span id="ollama-label">Ollama…</span></div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ============================== DASHBOARD -->
+    <section id="view-dashboard" class="view active">
+      <header class="view-header">
+        <div><h1>Обзор хранилища</h1><div class="muted" id="dash-sub"></div></div>
+        <button id="btn-refresh-stats" class="btn">Обновить</button>
+      </header>
+      <div id="dash-content">
+        <div class="kpis" id="kpis"></div>
+        <div class="grid-2">
+          <div class="card"><h3>Папки <span class="muted small">по числу заметок</span></h3><div class="chart-box"><canvas id="chart-folders"></canvas></div></div>
+          <div class="card"><h3>Теги <span class="muted small">топ-15</span></h3><div class="chart-box"><canvas id="chart-tags"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Активность за год</h3>
+            <div class="seg" id="heat-mode"><button data-mode="modified" class="active">Изменения</button><button data-mode="created">Создание</button></div>
+          </div>
+          <div id="heatmap" class="heatmap-wrap"></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h3>Рост базы <span class="muted small">по месяцам</span></h3><div class="chart-box"><canvas id="chart-growth"></canvas></div></div>
+          <div class="card"><h3>Здоровье связей</h3><div id="link-health" class="health"></div></div>
+        </div>
+        <div class="grid-3">
+          <div class="card"><h3>Хабы <span class="muted small">всего связей</span></h3><div id="list-hubs" class="list"></div></div>
+          <div class="card"><h3>На них ссылаются <span class="muted small">входящие</span></h3><div id="list-linked" class="list"></div></div>
+          <div class="card"><h3>Самые большие <span class="muted small">слов</span></h3><div id="list-largest" class="list"></div></div>
+        </div>
+        <div class="grid-3">
+          <div class="card"><h3>Сироты <span class="muted small">без связей</span></h3><div id="list-orphans" class="list scroll"></div></div>
+          <div class="card"><h3>Битые ссылки</h3><div id="list-broken" class="list scroll"></div></div>
+          <div class="card"><h3>Ссылаются, но заметки нет <span class="muted small">кандидаты на новые заметки</span></h3><div id="list-unresolved" class="list scroll"></div></div>
+        </div>
+        <div class="card"><h3>Все папки</h3><div class="table-wrap"><table id="table-folders"></table></div></div>
+      </div>
+    </section>
+
+    <!-- ============================== GRAPH -->
+    <section id="view-graph" class="view view-full">
+      <header class="view-header">
+        <h1>Граф связей</h1>
+        <div class="toolbar">
+          <input id="graph-search" type="search" placeholder="Найти заметку…">
+          <select id="graph-folder"><option value="">Все папки</option></select>
+          <label class="check"><input type="checkbox" id="graph-orphans" checked> Сироты</label>
+          <label class="check"><input type="checkbox" id="graph-labels" checked> Подписи</label>
+          <button class="btn" id="btn-graph-fit">Вписать</button>
+        </div>
+      </header>
+      <div class="graph-wrap">
+        <div id="graph"></div>
+        <div id="graph-legend" class="legend"></div>
+        <div id="graph-info" class="graph-info hidden"></div>
+      </div>
+    </section>
+
+    <!-- ============================== NOTES -->
+    <section id="view-notes" class="view view-full">
+      <div class="notes-layout">
+        <div class="notes-list-pane">
+          <div class="row tight">
+            <input id="notes-search" type="search" placeholder="Поиск по тексту заметок…">
+            <button class="btn accent" id="btn-new-note" title="Новая заметка по шаблону">+ Новая</button>
+          </div>
+          <div class="row tight">
+            <select id="notes-folder"><option value="">Все папки</option></select>
+            <select id="notes-sort">
+              <option value="mtime">Недавние</option>
+              <option value="title">По имени</option>
+              <option value="words">По размеру</option>
+              <option value="links">По связям</option>
+            </select>
+          </div>
+          <div id="notes-count" class="muted small"></div>
+          <div id="notes-list" class="notes-list"></div>
+        </div>
+        <div class="note-pane" id="note-pane">
+          <div id="note-empty" class="empty">
+            <svg viewBox="0 0 24 24" width="40" height="40"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/></svg>
+            <div>Выбери заметку слева</div>
+          </div>
+          <div id="note-view" class="hidden">
+            <div class="note-head">
+              <div class="note-head-main">
+                <div id="note-path" class="muted small"></div>
+                <h1 id="note-title"></h1>
+                <div id="note-meta" class="muted small"></div>
+                <div id="note-tags" class="chips"></div>
+              </div>
+              <div class="note-actions">
+                <button class="btn" id="btn-note-edit">Редактировать</button>
+                <button class="btn" id="btn-note-move">Переместить</button>
+                <a class="btn" id="btn-note-obsidian">Открыть в Obsidian</a>
+              </div>
+            </div>
+            <div class="ai-bar">
+              <span class="ai-bar-label">ИИ</span>
+              <button class="btn accent" id="btn-ai-summary">Кратко</button>
+              <button class="btn accent" id="btn-ai-suggest">Теги, связи и папка</button>
+              <button class="btn" id="btn-ai-similar">Похожие заметки</button>
+            </div>
+            <div id="ai-panel" class="ai-panel hidden"></div>
+            <div id="note-body" class="markdown"></div>
+            <div id="note-editor" class="hidden">
+              <textarea id="note-textarea" spellcheck="false"></textarea>
+              <div class="row"><button class="btn accent" id="btn-note-save">Сохранить</button><button class="btn" id="btn-note-cancel">Отмена</button></div>
+            </div>
+            <div class="grid-2 links-block">
+              <div class="card"><h3>Обратные ссылки <span id="bl-count" class="muted small"></span></h3><div id="note-backlinks" class="list"></div></div>
+              <div class="card"><h3>Исходящие ссылки <span id="ol-count" class="muted small"></span></h3><div id="note-outlinks" class="list"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== CHAT -->
+    <section id="view-chat" class="view view-full">
+      <div class="chat-layout">
+        <header class="view-header">
+          <h1>Чат с базой знаний</h1>
+          <div class="toolbar">
+            <label class="check"><input type="checkbox" id="chat-rag" checked> Искать в заметках</label>
+            <select id="chat-folder"><option value="">Во всём хранилище</option></select>
+            <button class="btn" id="btn-chat-clear">Новый чат</button>
+          </div>
+        </header>
+        <div id="chat-messages" class="chat-messages"></div>
+        <form id="chat-form" class="chat-form">
+          <textarea id="chat-input" rows="2" placeholder="Спроси что-нибудь о своих заметках… (Enter — отправить, Shift+Enter — новая строка)"></textarea>
+          <button class="btn accent" id="chat-send" type="submit">Отправить</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================== TOOLS -->
+    <section id="view-tools" class="view">
+      <header class="view-header"><div><h1>ИИ-агент</h1><div class="muted">Управление базой на естественном языке. Каждое изменение нужно подтвердить; перед правкой файлы копируются в <code>data/backups</code>.</div></div></header>
+      <div class="card">
+        <h3>Задание для агента</h3>
+        <textarea id="agent-input" rows="3" placeholder="Например: разложи заметки из папки «Входящие» по подходящим папкам и добавь им теги"></textarea>
+        <div class="row">
+          <button class="btn accent" id="btn-agent-plan">Составить план</button>
+          <div class="examples" id="agent-examples"></div>
+        </div>
+        <div id="agent-plan"></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Новая заметка с ИИ</h3>
+          <input id="gen-title" placeholder="Название заметки (например: Замыкание)">
+          <div class="row tight gen-row">
+            <select id="gen-template" title="Шаблон"></select>
+            <select id="gen-folder" title="Папка"></select>
+          </div>
+          <div id="gen-template-hint" class="muted small"></div>
+          <textarea id="gen-prompt" rows="3" placeholder="Что должно быть в заметке? Например: объясни простыми словами, с примером на JS"></textarea>
+          <label class="check"><input type="checkbox" id="gen-context" checked> Использовать мои заметки как контекст и ставить на них ссылки</label>
+          <div class="row"><button class="btn accent" id="btn-gen">Сгенерировать</button></div>
+          <div id="gen-sources" class="muted small"></div>
+          <textarea id="gen-output" rows="14" class="hidden" spellcheck="false"></textarea>
+          <div class="row hidden" id="gen-save-row"><span class="muted small" id="gen-save-path"></span><button class="btn accent" id="btn-gen-save">Сохранить в хранилище</button></div>
+        </div>
+        <div class="card">
+          <h3>Сводка по папке</h3>
+          <div class="row"><select id="sum-folder"></select><button class="btn accent" id="btn-sum-folder">Сделать сводку</button></div>
+          <div id="sum-output" class="markdown"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== SETTINGS -->
+    <section id="view-settings" class="view">
+      <header class="view-header"><h1>Настройки</h1></header>
+      <div class="card">
+        <h3>Хранилище Obsidian</h3>
+        <label for="set-vault">Путь к папке хранилища</label>
+        <div class="row"><input id="set-vault" placeholder="C:\Users\...\Documents\MyVault"><button class="btn accent" id="btn-save-vault">Подключить</button></div>
+        <div id="detected-vaults" class="detected"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Модель для чата, агента и шаблонов</h3>
+          <div class="seg" id="provider-seg"><button data-p="ollama">Локальная (Ollama)</button><button data-p="cloud">Облачная (API)</button><button data-p="manual">Веб-чат (бесплатно)</button></div>
+        </div>
+        <div id="prov-manual" class="hidden">
+          <div class="help" style="margin-top:0">
+            <h4>Без ключа и без своей модели</h4>
+            <ol>
+              <li>Когда нужен ИИ, приложение покажет готовый запрос — нажми «Скопировать».</li>
+              <li>Вставь его в <b>chat.deepseek.com</b>, <b>chatgpt.com</b> или любой другой чат.</li>
+              <li>Скопируй ответ <b>кнопкой копирования под ответом</b> (так сохранится разметка) и вставь обратно.</li>
+            </ol>
+            <div class="muted small" style="margin-top:6px">Работают все функции: чат, быстрый ответ, агент, шаблоны, подсказки. Сложные сценарии (агент с шаблонами) займут несколько шагов. Поиск по заметкам — по словам (по смыслу, если запущена Ollama с индексом).</div>
+          </div>
+        </div>
+        <div id="prov-ollama">
+          <label for="set-chat-model">Модель Ollama</label>
+          <input id="set-chat-model" list="models-chat" placeholder="авто: первая доступная">
+          <div class="muted small" style="margin-top:6px">Бесплатно и приватно: заметки не покидают компьютер.</div>
+        </div>
+        <div id="prov-cloud" class="hidden">
+          <div class="grid-2">
+            <div><label for="set-cloud-preset">Провайдер</label><select id="set-cloud-preset" style="width:100%"></select></div>
+            <div><label for="set-cloud-url">Адрес API</label><input id="set-cloud-url" placeholder="https://…/v1"></div>
+          </div>
+          <label for="set-cloud-key">API-ключ <a id="cloud-keys-link" target="_blank" rel="noopener" class="small"></a></label>
+          <div class="row tight"><input id="set-cloud-key" type="password" autocomplete="off" placeholder="вставь ключ"><button class="btn small danger hidden" id="btn-clear-key" title="Удалить сохранённый ключ">Удалить ключ</button></div>
+          <label for="set-cloud-model">Модель</label>
+          <div class="row tight"><input id="set-cloud-model" list="models-cloud" placeholder=""><label class="check hidden" id="cloud-free-wrap"><input type="checkbox" id="cloud-free-only"> только бесплатные</label></div>
+          <datalist id="models-cloud"></datalist>
+          <div class="cloud-warn">Фрагменты твоих заметок, по которым отвечает ИИ, будут отправляться на сервер провайдера. Поиск и индекс остаются локальными (Ollama).</div>
+        </div>
+        <div id="llm-info"></div>
+        <div class="grid-2">
+          <div><label for="set-temperature">Температура (0 — строго, 1 — креативно)</label><input type="number" step="0.1" min="0" max="2" id="set-temperature"></div>
+          <div><label for="set-chunks">Фрагментов заметок в контексте чата</label><input type="number" min="1" max="20" id="set-chunks"></div>
+        </div>
+        <div class="grid-2">
+          <div><label for="set-ctx">Размер контекста локальной модели, токенов (8192 — для видеокарты на 6 ГБ)</label><input type="number" min="2048" max="131072" step="1024" id="set-ctx"></div>
+          <div></div>
+        </div>
+        <div class="row"><button class="btn accent" id="btn-save-ai">Сохранить и проверить</button></div>
+      </div>
+      <div class="card">
+        <h3>Ollama <span class="muted small">локально: поиск по смыслу (эмбеддинги) и локальная чат-модель</span></h3>
+        <label for="set-ollama-url">Адрес сервера</label>
+        <div class="row"><input id="set-ollama-url" placeholder="http://127.0.0.1:11434"><button class="btn" id="btn-check-ollama">Проверить</button></div>
+        <div id="ollama-info"></div>
+        <label for="set-embed-model">Модель эмбеддингов (для поиска)</label><input id="set-embed-model" list="models-embed" placeholder="bge-m3">
+        <datalist id="models-chat"></datalist><datalist id="models-embed"></datalist>
+        <div class="row"><button class="btn accent" id="btn-save-ollama">Сохранить</button></div>
+        <div id="ollama-help" class="help hidden">
+          <h4>Как установить Ollama</h4>
+          <ol>
+            <li>Скачай и установи с <b>ollama.com/download</b></li>
+            <li>Скачай чат-модель, например: <code>ollama pull qwen2.5:7b</code> (хорошо понимает русский; для слабого ПК — <code>qwen2.5:3b</code>)</li>
+            <li>Скачай модель для поиска: <code>ollama pull nomic-embed-text</code> (или <code>bge-m3</code> — лучше для русского)</li>
+            <li>Нажми «Проверить»</li>
+          </ol>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Семантический индекс</h3>
+        <p class="muted">Индекс нужен для умного поиска в чате, похожих заметок и подсказок связей. Без него используется обычный поиск по словам. Обновление индексирует только изменённые заметки.</p>
+        <div id="index-status"></div>
+        <div class="progress hidden" id="index-progress"><div></div></div>
+        <div class="row">
+          <button class="btn accent" id="btn-build-index">Обновить индекс</button>
+          <button class="btn" id="btn-rebuild-index">Пересоздать с нуля</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="palette" class="palette hidden">
+  <div class="palette-box" role="dialog" aria-label="Найти или спросить">
+    <div class="palette-input">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input id="pal-input" autocomplete="off" placeholder="Найди заметку или спроси: «где я писал про деплой?»">
+      <kbd>Esc</kbd>
+    </div>
+    <div id="pal-answer" class="palette-answer hidden"></div>
+    <div id="pal-results" class="palette-results"></div>
+    <div class="palette-foot"><span>↑↓ выбрать</span><span>Enter открыть</span><span>Ctrl+Enter спросить ИИ</span><span id="pal-method"></span></div>
+  </div>
+</div>
+
+<div id="manual" class="modal hidden">
+  <div class="modal-box manual-box" role="dialog" aria-label="Запрос для веб-чата">
+    <div class="manual-head"><span class="manual-step" id="manual-step"></span><h3 id="manual-title"></h3></div>
+    <div class="manual-cols">
+      <div class="manual-col">
+        <div class="manual-label">1. Скопируй запрос <span class="muted small" id="manual-size"></span></div>
+        <textarea id="manual-prompt" readonly spellcheck="false"></textarea>
+        <div class="row tight">
+          <button class="btn accent" id="manual-copy">Скопировать</button>
+          <a class="btn" href="https://chat.deepseek.com/" target="_blank" rel="noopener">Открыть DeepSeek ↗</a>
+          <a class="btn" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT ↗</a>
+        </div>
+      </div>
+      <div class="manual-col">
+        <div class="manual-label">2. Вставь ответ <span class="muted small" id="manual-expects"></span></div>
+        <textarea id="manual-answer" spellcheck="false" placeholder="Вставь сюда ответ чата целиком"></textarea>
+        <div id="manual-error" class="err-text small"></div>
+      </div>
+    </div>
+    <div class="row end">
+      <button class="btn" id="manual-cancel">Отмена</button>
+      <button class="btn hidden" id="manual-skip" title="Оставить шаблон незаполненным">Пропустить</button>
+      <button class="btn accent" id="manual-ok">Продолжить</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-box"><h3 id="modal-title"></h3><div id="modal-body"></div><div class="row end" id="modal-actions"></div></div></div>
+<div id="toasts"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

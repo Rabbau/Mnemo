@@ -1,0 +1,12 @@
+/* Demo-only additions on top of style.css (docs/demo is built by scripts/build_demo.py). */
+body.demo { --banner-h: 34px; }
+.demo-banner {
+  height: var(--banner-h); display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 16px; font-size: 13px; background: linear-gradient(90deg, #2b2150, #1d2a44); color: #ddd6fe;
+  border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.demo-banner a { color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; padding: 1px 8px; }
+.demo-banner a:hover { background: rgba(255,255,255,.1); }
+body.demo .app { height: calc(100vh - var(--banner-h)); }
+body.demo .view.view-full.active { height: calc(100vh - var(--banner-h)); }
+@media (max-width: 800px) { .demo-banner { font-size: 11px; justify-content: flex-start; } }
