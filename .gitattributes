@@ -1,0 +1,4 @@
+# keep Windows scripts with CRLF and shell scripts with LF, whatever git's autocrlf says
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf

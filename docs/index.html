@@ -109,7 +109,7 @@
       <a href="#modes">ИИ</a>
       <a href="#install">Установка</a>
       <a href="demo/">Демо</a>
-      <a data-repo href="#">GitHub</a>
+      <a data-repo href="https://github.com/Rabbau/Mnemo">GitHub</a>
     </div>
   </div>
 </nav>
@@ -122,7 +122,7 @@
     <div class="cta">
       <a class="btn primary" href="demo/">Открыть демо →</a>
       <a class="btn" href="#install">Установить</a>
-      <a class="btn" data-repo href="#">GitHub</a>
+      <a class="btn" data-repo href="https://github.com/Rabbau/Mnemo">GitHub</a>
     </div>
     <div class="frame">
       <div class="frame-bar"><i></i><i></i><i></i><span>демо на примере хранилища</span><a href="demo/" target="_blank" rel="noopener">на весь экран ↗</a></div>
@@ -176,8 +176,8 @@
     <p class="sub">Нужен только Python 3.10+. Работает на Windows, macOS и Linux.</p>
     <div class="steps">
       <div class="card step"><h3>Скачай</h3>
-        <pre>git clone <span data-repo-text>https://github.com/…/mnemo</span>
-cd mnemo</pre></div>
+        <pre>git clone <span data-repo-text>https://github.com/Rabbau/Mnemo</span>
+cd Mnemo</pre></div>
       <div class="card step"><h3>Запусти</h3>
         <p>Windows — двойной клик по <code>run.bat</code>. Linux и macOS:</p>
         <pre>./run.sh</pre>
@@ -201,14 +201,14 @@ ollama pull bge-m3</pre></div>
 
 <footer>
   <div class="wrap">
-    <span>Mnemo · лицензия MIT · <a data-repo href="#">исходный код</a></span>
+    <span>Mnemo · лицензия MIT · <a data-repo href="https://github.com/Rabbau/Mnemo">исходный код</a></span>
     <span>«Obsidian» — товарный знак Dynalist Inc. Mnemo — независимый проект и не связан с Obsidian.</span>
   </div>
 </footer>
 
 <script>
   // Адрес репозитория на GitHub — поменяй на свой, и он подставится во все ссылки на странице.
-  const REPO_URL = "https://github.com/your-name/mnemo";
+  const REPO_URL = "https://github.com/Rabbau/Mnemo";
   document.querySelectorAll("[data-repo]").forEach((a) => (a.href = REPO_URL));
   document.querySelectorAll("[data-repo-text]").forEach((s) => (s.textContent = REPO_URL));
 </script>

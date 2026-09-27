@@ -3,7 +3,7 @@
 > Твоё хранилище заметок, которое помнит за тебя.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b6cf6.svg)](LICENSE)
-**[Живое демо](https://your-name.github.io/mnemo/demo/)** · [О проекте](https://your-name.github.io/mnemo/)
+**[Живое демо](https://rabbau.github.io/Mnemo/demo/)** · [О проекте](https://rabbau.github.io/Mnemo/) · [GitHub](https://github.com/Rabbau/Mnemo)
 
 Локальное веб-приложение для работы с хранилищем [Obsidian](https://obsidian.md): статистика, граф связей, чат с заметками и ИИ-агент, который наводит порядок в базе. ИИ по умолчанию работает локально через [Ollama](https://ollama.com), и заметки не покидают компьютер. По желанию чат-модель можно переключить на облачную: OpenRouter, DeepSeek, ChatGPT (OpenAI) или любой OpenAI-совместимый API. А без ключа и без своей модели работает бесплатный режим **«Веб-чат»**: приложение готовит запрос, ты вставляешь его в chat.deepseek.com или chatgpt.com и возвращаешь ответ.
 
@@ -33,6 +33,15 @@
 ## Быстрый старт
 
 **Нужно:** Python 3.10+. Ollama нужна только для ИИ-функций: статистика, граф и заметки работают без неё.
+
+### Скачать
+
+```bash
+git clone https://github.com/Rabbau/Mnemo.git
+cd Mnemo
+```
+
+Или **Code → Download ZIP** на [странице репозитория](https://github.com/Rabbau/Mnemo).
 
 ### Windows
 
@@ -102,7 +111,7 @@ ollama pull nomic-embed-text    # эмбеддинги для поиска по 
 1. Запушь репозиторий на GitHub.
 2. **Settings → Pages → Build and deployment**: Source — *Deploy from a branch*, Branch — `main`, папка — **`/docs`** → Save.
 3. Через минуту сайт появится на `https://<ник>.github.io/<репозиторий>/`, демо — на `…/demo/`.
-4. Замени `your-name/mnemo` на свой адрес: в `docs/index.html` (константа `REPO_URL` внизу страницы) и в ссылках в начале этого README.
+4. Сайт: https://rabbau.github.io/Mnemo/, демо: https://rabbau.github.io/Mnemo/demo/. Адрес репозитория для ссылок на лендинге задан в `docs/index.html` (константа `REPO_URL` внизу страницы).
 
 **Обновить демо** после изменений во фронтенде или в демо-хранилище:
 
