@@ -79,8 +79,10 @@
     .step { counter-increment: s; }
     .step h3::before { content: counter(s); display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
       background: var(--accent); color: #fff; font-size: 13px; margin-right: 10px; }
-    pre { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto;
-      font: 13px/1.6 var(--mono); color: #d4d4de; margin: 12px 0 0; }
+    /* commands wrap instead of scrolling: narrow cards would otherwise show a (light, native) scrollbar */
+    pre { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+      white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.6 var(--mono); color: #d4d4de; margin: 12px 0 0; }
+    html { color-scheme: dark; }
 
     .privacy { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .privacy .card p + p { margin-top: 8px; }
