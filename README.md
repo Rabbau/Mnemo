@@ -3,7 +3,7 @@
 > Твоё хранилище заметок, которое помнит за тебя.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b6cf6.svg)](LICENSE)
-**[Живое демо](https://rabbau.github.io/Mnemo/demo/)** · [О проекте](https://rabbau.github.io/Mnemo/) · [GitHub](https://github.com/Rabbau/Mnemo)
+**[Живое демо](https://rabbau.github.io/Mnemo/demo/)** · [О проекте](https://rabbau.github.io/Mnemo/)
 
 Локальное веб-приложение для работы с хранилищем [Obsidian](https://obsidian.md): статистика, граф связей, чат с заметками и ИИ-агент, который наводит порядок в базе. ИИ по умолчанию работает локально через [Ollama](https://ollama.com), и заметки не покидают компьютер. По желанию чат-модель можно переключить на облачную: OpenRouter, DeepSeek, ChatGPT (OpenAI) или любой OpenAI-совместимый API. А без ключа и без своей модели работает бесплатный режим **«Веб-чат»**: приложение готовит запрос, ты вставляешь его в chat.deepseek.com или chatgpt.com и возвращаешь ответ.
 
